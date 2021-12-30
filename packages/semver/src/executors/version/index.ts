@@ -3,7 +3,11 @@ import { SchemaError } from '@nrwl/tao/src/shared/params';
 import { concat, defer, lastValueFrom, of } from 'rxjs';
 import { catchError, concatMap, reduce, switchMap } from 'rxjs/operators';
 
-import { calculateChangelogChanges, defaultHeader, getChangelogPath } from './utils/changelog';
+import {
+  calculateChangelogChanges,
+  defaultHeader,
+  getChangelogPath,
+} from './utils/changelog';
 import { getDependencyRoots } from './utils/get-project-dependencies';
 import { tryPushToGitRemote } from './utils/git';
 import { executePostTargets } from './utils/post-target';
@@ -68,6 +72,7 @@ export default async function version(
     tagPrefix,
     releaseType: releaseAs,
     preid,
+    context,
   });
 
   const action$ = newVersion$.pipe(
@@ -80,7 +85,7 @@ export default async function version(
       const options: CommonVersionOptions = {
         dryRun,
         trackDeps,
-        newVersion: newVersion,
+        newVersion: newVersion.version,
         noVerify,
         preset,
         projectRoot,
@@ -88,6 +93,7 @@ export default async function version(
         changelogHeader,
         commitMessageFormat,
         projectName,
+        dependencyUpdates: newVersion.dependencyUpdates,
       };
 
       const runStandardVersion$ = defer(() =>
