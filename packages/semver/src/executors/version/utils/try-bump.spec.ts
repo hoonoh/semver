@@ -82,27 +82,33 @@ describe('tryBump', () => {
       .mockReturnValueOnce(of(['fix: A', 'feat: B']));
 
     /* Mock bump to return "minor". */
-    mockConventionalRecommendedBump
-      .mockImplementation(
-        callbackify(
-          jest.fn().mockResolvedValueOnce({
-              releaseType: undefined,
-            })
-            .mockResolvedValueOnce({
-              releaseType: undefined,
-            })
-            .mockResolvedValueOnce({
-              releaseType: 'minor',
-            })
-        ) as () => void
-      );
+    mockConventionalRecommendedBump.mockImplementation(
+      callbackify(
+        jest
+          .fn()
+          .mockResolvedValueOnce({
+            releaseType: undefined,
+          })
+          .mockResolvedValueOnce({
+            releaseType: undefined,
+          })
+          .mockResolvedValueOnce({
+            releaseType: 'minor',
+          })
+      ) as () => void
+    );
 
-    const newVersion = await lastValueFrom(tryBump({
-      preset: 'angular',
-      projectRoot: '/libs/demo',
-      dependencyRoots: [{ name: 'dep1', path: '/libs/dep1' },{ name: 'dep2', path: '/libs/dep2' }],
-      tagPrefix: 'v',
-    }));
+    const newVersion = await lastValueFrom(
+      tryBump({
+        preset: 'angular',
+        projectRoot: '/libs/demo',
+        dependencyRoots: [
+          { name: 'dep1', path: '/libs/dep1' },
+          { name: 'dep2', path: '/libs/dep2' },
+        ],
+        tagPrefix: 'v',
+      })
+    );
 
     // ? should this be `2.1.1` ? #278
     expect(newVersion?.version).toEqual('2.2.0');
@@ -151,13 +157,15 @@ describe('tryBump', () => {
   it('should use given type to calculate next version', async () => {
     mockGetCommits.mockReturnValue(of(['feat: A', 'feat: B']));
 
-    const newVersion = await lastValueFrom(tryBump({
-      preset: 'angular',
-      projectRoot: '/libs/demo',
-      tagPrefix: 'v',
-      releaseType: 'premajor',
-      preid: 'alpha',
-    }));
+    const newVersion = await lastValueFrom(
+      tryBump({
+        preset: 'angular',
+        projectRoot: '/libs/demo',
+        tagPrefix: 'v',
+        releaseType: 'premajor',
+        preid: 'alpha',
+      })
+    );
 
     expect(newVersion?.version).toEqual('3.0.0-alpha.0');
 
@@ -196,7 +204,7 @@ describe('tryBump', () => {
       tryBump({
         preset: 'angular',
         projectRoot: '/libs/demo',
-        tagPrefix: 'v'
+        tagPrefix: 'v',
       })
     );
 
