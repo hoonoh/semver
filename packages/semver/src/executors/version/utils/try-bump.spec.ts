@@ -56,7 +56,7 @@ describe('tryBump', () => {
       })
     );
 
-    expect(newVersion).toEqual('2.2.0');
+    expect(newVersion?.version).toEqual('2.2.0');
 
     expect(mockGetCommits).toBeCalledTimes(1);
     expect(mockGetCommits).toBeCalledWith({
@@ -100,11 +100,12 @@ describe('tryBump', () => {
     const newVersion = await lastValueFrom(tryBump({
       preset: 'angular',
       projectRoot: '/libs/demo',
-      dependencyRoots: ['/libs/dep1', '/libs/dep2'],
+      dependencyRoots: [{ name: 'dep1', path: '/libs/dep1' },{ name: 'dep2', path: '/libs/dep2' }],
       tagPrefix: 'v',
     }));
 
-    expect(newVersion).toEqual('2.1.1');
+    // ? should this be `2.1.1` ? #278
+    expect(newVersion?.version).toEqual('2.2.0');
 
     expect(mockGetCommits).toBeCalledTimes(3);
     expect(mockGetCommits).toBeCalledWith({
@@ -158,7 +159,7 @@ describe('tryBump', () => {
       preid: 'alpha',
     }));
 
-    expect(newVersion).toEqual('3.0.0-alpha.0');
+    expect(newVersion?.version).toEqual('3.0.0-alpha.0');
 
     expect(mockConventionalRecommendedBump).not.toBeCalled();
 
@@ -181,7 +182,7 @@ describe('tryBump', () => {
       })
     );
 
-    expect(newVersion).toEqual('2.1.1');
+    expect(newVersion?.version).toEqual('2.1.1');
 
     expect(mockConventionalRecommendedBump).not.toBeCalled();
   });
