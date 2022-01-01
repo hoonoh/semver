@@ -107,11 +107,11 @@ describe('tryBump', () => {
           { name: 'dep2', path: '/libs/dep2' },
         ],
         tagPrefix: 'v',
+        syncVersions: true,
       })
     );
 
-    // ? should this be `2.1.1` ? #278
-    expect(newVersion?.version).toEqual('2.2.0');
+    expect(newVersion?.version).toEqual('2.1.1');
 
     expect(mockGetCommits).toBeCalledTimes(3);
     expect(mockGetCommits).toBeCalledWith({
@@ -199,6 +199,13 @@ describe('tryBump', () => {
     mockGetLastVersion.mockReturnValue(throwError(() => 'No version found'));
     mockGetCommits.mockReturnValue(of([]));
     mockGetFirstCommitRef.mockReturnValue(of('sha1'));
+    mockConventionalRecommendedBump.mockImplementation(
+      callbackify(
+        jest.fn().mockResolvedValue({
+          releaseType: undefined,
+        })
+      ) as () => void
+    );
 
     await lastValueFrom(
       tryBump({
@@ -220,6 +227,13 @@ describe('tryBump', () => {
 
   it('should return undefined if there are no changes in current path', async () => {
     mockGetCommits.mockReturnValue(of([]));
+    mockConventionalRecommendedBump.mockImplementation(
+      callbackify(
+        jest.fn().mockResolvedValue({
+          releaseType: undefined,
+        })
+      ) as () => void
+    );
 
     const newVersion = await lastValueFrom(
       tryBump({
