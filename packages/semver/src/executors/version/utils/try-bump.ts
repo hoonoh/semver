@@ -75,17 +75,20 @@ If your project is already versioned, please tag the latest release commit with 
 
   const commits$ = lastVersionGitRef$.pipe(
     switchMap((lastVersionGitRef) => {
-      const sinceTarget = lastVersionGitRef;
       return getCommits({
         projectRoot: projectPath,
-        since: sinceTarget || lastVersionGitRef,
+        since:
+          since !== undefined && !since.endsWith(initialVersion)
+            ? since
+            : lastVersionGitRef,
       });
-    })
+    }),
   );
 
   return {
     lastVersion$,
     commits$,
+    lastVersionGitRef$,
   };
 }
 
@@ -111,14 +114,14 @@ export function tryBump({
   versionTagPrefix?: string | null;
   syncVersions?: boolean;
 }): Observable<TryBumpReturn | null> {
-  const { lastVersion$, commits$ } = getProjectVersion(
+  const { lastVersion$, commits$, lastVersionGitRef$ } = getProjectVersion(
     tagPrefix,
     projectRoot,
     releaseType
   );
 
-  return forkJoin([lastVersion$, commits$]).pipe(
-    switchMap(([lastVersion, commits]) => {
+  return forkJoin([lastVersion$, commits$, lastVersionGitRef$]).pipe(
+    switchMap(([lastVersion, commits, lastVersionGitRef]) => {
       /* If release type is manually specified,
        * we just release even if there are no changes. */
       if (releaseType !== undefined) {
@@ -147,7 +150,9 @@ export function tryBump({
               depTagPrefix,
               root.path,
               releaseType,
-              `${tagPrefix}${lastVersion}`
+              lastVersion !== initialVersion
+                ? `${tagPrefix}${lastVersion}`
+                : lastVersionGitRef
             );
 
           return forkJoin([depLastVersion$, depCommits$]).pipe(
@@ -200,7 +205,7 @@ export function tryBump({
               v !== null &&
               v.type === 'dependency' &&
               v.version !== null &&
-              v.version !== '0.0.0'
+              v.version !== initialVersion
           ) as Version[];
 
           const rtn: TryBumpReturn = {
